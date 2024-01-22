@@ -1,16 +1,22 @@
-import { ConfigPlugin } from '@expo/config-plugins';
-import { getShareExtensionBundledIdentifier, shareExtensionName } from './constants';
-import { getShareExtensionEntitlements } from './writeShareExtensionFiles';
+import { ConfigPlugin } from "@expo/config-plugins";
+import {
+  getShareExtensionBundledIdentifier,
+  shareExtensionName,
+} from "./constants";
+import { getShareExtensionEntitlements } from "./writeShareExtensionFiles";
 
 export const withShareExtensionConfig: ConfigPlugin = (config) => {
   const extName = shareExtensionName;
   const appIdentifier = config.ios!.bundleIdentifier!;
-  const shareExtensionIdentifier = getShareExtensionBundledIdentifier(appIdentifier);
+  const shareExtensionIdentifier =
+    getShareExtensionBundledIdentifier(appIdentifier);
 
-  let extConfigIndex = null;
-  config.extra?.eas?.build?.experimental?.ios?.appExtensions?.forEach((ext: any, index: number) => {
-    ext.targetName === extName && (extConfigIndex = index);
-  });
+  let extConfigIndex: number | null = null;
+  config.extra?.eas?.build?.experimental?.ios?.appExtensions?.forEach(
+    (ext: any, index: number) => {
+      ext.targetName === extName && (extConfigIndex = index);
+    },
+  );
 
   if (!config.extra) {
     config.extra = {};
@@ -39,7 +45,8 @@ export const withShareExtensionConfig: ConfigPlugin = (config) => {
     extConfigIndex = 0;
   }
 
-  const extConfig = config.extra.eas.build.experimental.ios.appExtensions[extConfigIndex];
+  const extConfig =
+    config.extra.eas.build.experimental.ios.appExtensions[extConfigIndex];
   extConfig.entitlements = {
     ...extConfig.entitlements,
     ...getShareExtensionEntitlements(appIdentifier),

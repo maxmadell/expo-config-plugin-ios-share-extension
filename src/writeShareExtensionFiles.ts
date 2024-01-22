@@ -14,7 +14,7 @@ import {
 export async function writeShareExtensionFiles(
   platformProjectRoot: string,
   scheme: string,
-  appIdentifier: string
+  appIdentifier: string,
 ) {
   const infoPlistFilePath = getShareExtensionInfoFilePath(platformProjectRoot);
   const infoPlistContent = getShareExtensionInfoContent();
@@ -40,12 +40,12 @@ export async function writeShareExtensionFiles(
 
 //: [root]/ios/ShareExtension/ShareExtension-Entitlements.plist
 export function getShareExtensionEntitlementsFilePath(
-  platformProjectRoot: string
+  platformProjectRoot: string,
 ) {
   return path.join(
     platformProjectRoot,
     shareExtensionName,
-    shareExtensionEntitlementsFileName
+    shareExtensionEntitlementsFileName,
   );
 }
 
@@ -64,7 +64,7 @@ export function getShareExtensionInfoFilePath(platformProjectRoot: string) {
   return path.join(
     platformProjectRoot,
     shareExtensionName,
-    shareExtensionInfoFileName
+    shareExtensionInfoFileName,
   );
 }
 
@@ -92,51 +92,53 @@ export function getShareExtensionInfoContent() {
 
 //: [root]/ios/ShareExtension/ShareExtension-Info.plist
 export function getShareExtensionStoryboardFilePath(
-  platformProjectRoot: string
+  platformProjectRoot: string,
 ) {
   return path.join(
     platformProjectRoot,
     shareExtensionName,
-    shareExtensionStoryBoardFileName
+    shareExtensionStoryBoardFileName,
   );
 }
 
 export function getShareExtensionStoryBoardContent() {
   return `<?xml version="1.0" encoding="UTF-8"?>
-  <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13122.16" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="j1y-V4-xli">
-      <dependencies>
-          <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13104.12"/>
-          <capability name="Safe area layout guides" minToolsVersion="9.0"/>
-          <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
-      </dependencies>
-      <scenes>
-          <!--Share View Controller-->
-          <scene sceneID="ceB-am-kn3">
-              <objects>
-                  <viewController id="j1y-V4-xli" customClass="ShareViewController" customModuleProvider="target" sceneMemberID="viewController">
-                      <view key="view" opaque="NO" contentMode="scaleToFill" id="wbc-yd-nQP">
-                          <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
-                          <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                          <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
-                          <viewLayoutGuide key="safeArea" id="1Xd-am-t49"/>
-                      </view>
-                  </viewController>
-                  <placeholder placeholderIdentifier="IBFirstResponder" id="CEy-Cv-SGf" userLabel="First Responder" sceneMemberID="firstResponder"/>
-              </objects>
-          </scene>
-      </scenes>
-  </document>
+		<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="22505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+				<device id="retina6_12" orientation="portrait" appearance="light"/>
+				<dependencies>
+						<plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22504"/>
+						<capability name="Safe area layout guides" minToolsVersion="9.0"/>
+						<capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+				</dependencies>
+				<scenes>
+						<!--Share View Controller-->
+						<scene sceneID="s0d-6b-0kx">
+								<objects>
+										<viewController id="Y6W-OH-hqX" customClass="ShareViewController" customModuleProvider="target" sceneMemberID="viewController">
+												<view key="view" contentMode="scaleToFill" id="5EZ-qb-Rvc">
+														<rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+														<autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+														<viewLayoutGuide key="safeArea" id="vDu-zF-Fre"/>
+														<color key="backgroundColor" red="0.1803921568627451" green="0.74901960784313726" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+												</view>
+										</viewController>
+										<placeholder placeholderIdentifier="IBFirstResponder" id="Ief-a0-LHa" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+								</objects>
+								<point key="canvasLocation" x="9" y="6"/>
+						</scene>
+				</scenes>
+		</document>
   `;
 }
 
 //: [root]/ios/ShareExtension/ShareViewController.swift
 export function getShareExtensionViewControllerPath(
-  platformProjectRoot: string
+  platformProjectRoot: string,
 ) {
   return path.join(
     platformProjectRoot,
     shareExtensionName,
-    shareExtensionViewControllerFileName
+    shareExtensionViewControllerFileName,
   );
 }
 
@@ -159,6 +161,11 @@ export function getShareExtensionViewControllerContent(scheme: string) {
   
     override func viewDidAppear(_ animated: Bool) {
       super.viewDidAppear(animated)
+
+			self.view.transform = CGAffineTransform (translationX: 0, y: self.view.frame.size.height)
+			UIView.animate (withDuration: 0.25, animations: { () -> Void in
+				self.view.transform = .identity
+			})
   
       if let content = self.extensionContext!.inputItems[0] as? NSExtensionItem {
         if let contents = content.attachments {
@@ -172,6 +179,14 @@ export function getShareExtensionViewControllerContent(scheme: string) {
         }
       }
     }
+
+		override func isContentValid () -> Bool {
+			return true
+		}
+
+		override func didSelectPost () {
+			self.extensionContext!.completeRequest (returningItems: [], completionHandler: nil)
+		}
   
     private func handleUrl(attachment: NSItemProvider) {
   
@@ -247,6 +262,7 @@ export function getShareExtensionViewControllerContent(scheme: string) {
         responder = responder!.next
       }
   
+			self.dismiss(animated: true, completion: nil)
       extensionContext!.completeRequest(returningItems: [], completionHandler: nil)
     }
   }
